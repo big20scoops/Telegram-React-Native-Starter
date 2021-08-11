@@ -1,112 +1,126 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
-import React from 'react';
-import type {Node} from 'react';
+/** @format **/
+import React, {useEffect, useCallback, useState} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
+  NativeModules,
+  NativeEventEmitter,
   View,
+  SafeAreaView,
 } from 'react-native';
-
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  REACT_APP_TELEGRAM_API_ID,
+  REACT_APP_TELEGRAM_API_HASH,
+  TELEGRAM_EVENT,
+} from './src/constants';
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+const App = () => {
+  const {TDController} = NativeModules;
+  const [telegramState, updateTelegramState] = useState('');
+  const [isStarted, start] = useState(false);
+
+  useEffect(() => {
+    startTDLib();
+    const eventEmitter = new NativeEventEmitter(TDController);
+    const eventListener = eventEmitter.addListener(TELEGRAM_EVENT, event => {
+      if (event.state === 'authorizationStateWaitTdlibParameters') {
+        TDController.initialTDLibs(
+          REACT_APP_TELEGRAM_API_ID,
+          REACT_APP_TELEGRAM_API_HASH,
+          'en',
+          'emulator/simulator',
+          '14/12',
+          '0.0.1',
+        );
+      } else {
+        if (event.state === 'authorizationStateReady') {
+          TDController.getContacts();
+        }
+        updateTelegramState(event.state);
+      }
+    });
+
+    // const contactListener = eventEmitter.addListener(
+    //   TELEGRAM_CONTACT_EVENT,
+    //   async ({contacts: tdContacts, contact: tdContact, file: tdFile}) => {
+    //     if (tdContacts) {
+    //       dispatch(setContactIdsList(tdContacts));
+    //     }
+
+    //     if (tdContact) {
+    //       const {id, first_name, last_name} = tdContact;
+    //       const image = tdContact?.profile_photo?.small;
+    //       const autobahnWallet = await getTelegramAutobahnAddressLookup(id);
+    //       const transformedContact = {
+    //         id,
+    //         autobahnWallet,
+    //         name: `${first_name} ${last_name}`,
+    //         image,
+    //       };
+    //       dispatch(setContactsInfo(transformedContact));
+    //       if (image) {
+    //         TDController.downloadFile(image.id);
+    //       }
+    //     }
+
+    //     if (tdFile) {
+    //       const {id, path} = tdFile;
+    //       if (path) {
+    //         dispatch(setContactImagePath({id, path}));
+    //       }
+    //     }
+    //   },
+    // );
+
+    return () => {
+      eventListener.remove();
+      // contactListener.remove();
+    };
+  }, [TDController, startTDLib]);
+
+  const startTDLib = useCallback(() => {
+    if (!isStarted) {
+      TDController.startTDLib();
+      start(true);
+    }
+  }, [TDController, isStarted]);
+
+  const renderScreen = useCallback(() => {
+    if (telegramState === 'updateAuthorizationState') {
+      return <View />;
+      // } else if (
+      //   telegramState === 'authorizationStateWaitPhoneNumber' ||
+      //   telegramState === 'authorizationStateWaitRegistration'
+      // ) {
+      //   return <TelegramPhoneNumberInput />;
+      // } else if (telegramState === 'authorizationStateWaitCode') {
+      //   return <TelegramCodeInput />;
+      // } else if (telegramState === 'authorizationStateWaitPassword') {
+      //   return <TelegramPasswordInput />;
+      // } else if (telegramState === 'authorizationStateReady' && isConnect) {
+      //   return <TelegramContactsList />;
+      // } else if (telegramState === 'authorizationStateReady' && !isConnect) {
+      //   return (
+      //     <OuterContainer>
+      //       <Container>
+      //         <Image source={telegramIcon} />
+      //         <ButtonContainer>
+      //           <Text fontSize={14} fontWeight="regular" marginBottom={8}>
+      //             {txt_contact_message}
+      //           </Text>
+      //           <Button
+      //             labelFirstLine={txt_connect_button}
+      //             fontWeight="regular"
+      //             onPress={connectToTelegram}
+      //           />
+      //         </ButtonContainer>
+      //       </Container>
+      //     </OuterContainer>
+      //   );
+    } else {
+      return <View />;
+    }
+  }, [telegramState]);
+
+  return <SafeAreaView>{renderScreen()}</SafeAreaView>;
 };
-
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
