@@ -6,7 +6,9 @@ import {
   View,
   SafeAreaView,
 } from 'react-native';
+
 import {TelegramPhoneNumberInput} from './src/components/TelegramPhoneNumberInput';
+import {TelegramCodeInput} from './src/components/TelegramCodeInput';
 import {
   REACT_APP_TELEGRAM_API_ID,
   REACT_APP_TELEGRAM_API_HASH,
@@ -21,7 +23,6 @@ const App = () => {
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(TDController);
     const eventListener = eventEmitter.addListener(TELEGRAM_EVENT, event => {
-      console.log('===>', event.state);
       if (event.state === 'authorizationStateWaitTdlibParameters') {
         TDController.initialTDLibs(
           REACT_APP_TELEGRAM_API_ID,
@@ -94,8 +95,8 @@ const App = () => {
       telegramState === 'authorizationStateWaitRegistration'
     ) {
       return <TelegramPhoneNumberInput />;
-      // } else if (telegramState === 'authorizationStateWaitCode') {
-      //   return <TelegramCodeInput />;
+    } else if (telegramState === 'authorizationStateWaitCode') {
+      return <TelegramCodeInput />;
       // } else if (telegramState === 'authorizationStateWaitPassword') {
       //   return <TelegramPasswordInput />;
       // } else if (telegramState === 'authorizationStateReady' && isConnect) {
