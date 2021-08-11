@@ -6,6 +6,7 @@ import {
   View,
   SafeAreaView,
 } from 'react-native';
+import {TelegramPhoneNumberInput} from './src/components/TelegramPhoneNumberInput';
 import {
   REACT_APP_TELEGRAM_API_ID,
   REACT_APP_TELEGRAM_API_HASH,
@@ -18,9 +19,9 @@ const App = () => {
   const [isStarted, start] = useState(false);
 
   useEffect(() => {
-    startTDLib();
     const eventEmitter = new NativeEventEmitter(TDController);
     const eventListener = eventEmitter.addListener(TELEGRAM_EVENT, event => {
+      console.log('===>', event.state);
       if (event.state === 'authorizationStateWaitTdlibParameters') {
         TDController.initialTDLibs(
           REACT_APP_TELEGRAM_API_ID,
@@ -70,6 +71,8 @@ const App = () => {
     //   },
     // );
 
+    startTDLib();
+
     return () => {
       eventListener.remove();
       // contactListener.remove();
@@ -86,11 +89,11 @@ const App = () => {
   const renderScreen = useCallback(() => {
     if (telegramState === 'updateAuthorizationState') {
       return <View />;
-      // } else if (
-      //   telegramState === 'authorizationStateWaitPhoneNumber' ||
-      //   telegramState === 'authorizationStateWaitRegistration'
-      // ) {
-      //   return <TelegramPhoneNumberInput />;
+    } else if (
+      telegramState === 'authorizationStateWaitPhoneNumber' ||
+      telegramState === 'authorizationStateWaitRegistration'
+    ) {
+      return <TelegramPhoneNumberInput />;
       // } else if (telegramState === 'authorizationStateWaitCode') {
       //   return <TelegramCodeInput />;
       // } else if (telegramState === 'authorizationStateWaitPassword') {
