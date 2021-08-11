@@ -7,13 +7,14 @@ import {
   SafeAreaView,
 } from 'react-native';
 
-import {TelegramPhoneNumberInput} from './src/components/TelegramPhoneNumberInput';
-import {TelegramCodeInput} from './src/components/TelegramCodeInput';
 import {
   REACT_APP_TELEGRAM_API_ID,
   REACT_APP_TELEGRAM_API_HASH,
   TELEGRAM_EVENT,
 } from './src/constants';
+import {TelegramPhoneNumberInput} from './src/components/TelegramPhoneNumberInput';
+import {TelegramCodeInput} from './src/components/TelegramCodeInput';
+import {TelegramPasswordInput} from './src/components/TelegramPasswordInput';
 
 const App = () => {
   const {TDController} = NativeModules;
@@ -97,8 +98,8 @@ const App = () => {
       return <TelegramPhoneNumberInput />;
     } else if (telegramState === 'authorizationStateWaitCode') {
       return <TelegramCodeInput />;
-      // } else if (telegramState === 'authorizationStateWaitPassword') {
-      //   return <TelegramPasswordInput />;
+    } else if (telegramState === 'authorizationStateWaitPassword') {
+      return <TelegramPasswordInput />;
       // } else if (telegramState === 'authorizationStateReady' && isConnect) {
       //   return <TelegramContactsList />;
       // } else if (telegramState === 'authorizationStateReady' && !isConnect) {

@@ -10,22 +10,22 @@ import {
 
 import {styles} from '../styles';
 
-export const TelegramCodeInput = () => {
+export const TelegramPasswordInput = () => {
   const {TDController} = NativeModules;
-  const [code, InputCode] = useState('');
+  const [password, InputPassword] = useState('');
 
   const connectToTelegram = () => {
-    TDController.sendCode(code);
+    TDController.sendPassword(password);
   };
 
   const {input, button} = styles;
   return (
     <ScrollView>
-      <Text>Code</Text>
+      <Text>Password</Text>
       <TextInput
         style={input}
-        value={code}
-        onChangeText={value => InputCode(value)}
+        value={password}
+        onChangeText={value => InputPassword(value)}
       />
 
       <TouchableOpacity style={button} onPress={connectToTelegram}>
