@@ -5,6 +5,7 @@ import {
   NativeEventEmitter,
   View,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
 
 import {
@@ -68,12 +69,12 @@ const App = () => {
           }
         }
 
-        // if (tdFile) {
-        //   const {id, path} = tdFile;
-        //   if (path) {
-        //     dispatch(setContactImagePath({id, path}));
-        //   }
-        // }
+        if (tdFile) {
+          const {id, path} = tdFile;
+          if (path) {
+            setContactImagePath(id, path);
+          }
+        }
       },
     );
 
@@ -83,7 +84,7 @@ const App = () => {
       eventListener.remove();
       contactListener.remove();
     };
-  }, [TDController, startTDLib]);
+  }, [TDController, setContactImagePath, startTDLib]);
 
   const startTDLib = useCallback(() => {
     if (!isStarted) {
@@ -91,6 +92,26 @@ const App = () => {
       start(true);
     }
   }, [TDController, isStarted]);
+
+  const setContactImagePath = useCallback((id, path) => {
+    setContactsInfo(contactsInfo => {
+      let newContactsInfo = contactsInfo;
+
+      let correctUser = contactsInfo.filter(
+        user => user.image && user.image.id === id,
+      );
+      if (correctUser[0]) {
+        const newContact = {...correctUser[0], image: {id, path}};
+
+        const otherUsers = contactsInfo.filter(
+          user => !user.image || user.image.id !== id,
+        );
+
+        newContactsInfo = [...otherUsers, newContact];
+      }
+      return newContactsInfo;
+    });
+  }, []);
 
   const renderScreen = useCallback(() => {
     if (telegramState === 'updateAuthorizationState') {
@@ -116,7 +137,11 @@ const App = () => {
     }
   }, [contactIdsList, contactsInfo, telegramState]);
 
-  return <SafeAreaView style={styles.container}>{renderScreen()}</SafeAreaView>;
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView>{renderScreen()}</ScrollView>
+    </SafeAreaView>
+  );
 };
 
 export default App;
