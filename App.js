@@ -100,32 +100,14 @@ const App = () => {
       return <TelegramCodeInput />;
     } else if (telegramState === 'authorizationStateWaitPassword') {
       return <TelegramPasswordInput />;
-      // } else if (telegramState === 'authorizationStateReady' && isConnect) {
+      // } else if (telegramState === 'authorizationStateReady') {
       //   return <TelegramContactsList />;
-      // } else if (telegramState === 'authorizationStateReady' && !isConnect) {
-      //   return (
-      //     <OuterContainer>
-      //       <Container>
-      //         <Image source={telegramIcon} />
-      //         <ButtonContainer>
-      //           <Text fontSize={14} fontWeight="regular" marginBottom={8}>
-      //             {txt_contact_message}
-      //           </Text>
-      //           <Button
-      //             labelFirstLine={txt_connect_button}
-      //             fontWeight="regular"
-      //             onPress={connectToTelegram}
-      //           />
-      //         </ButtonContainer>
-      //       </Container>
-      //     </OuterContainer>
-      //   );
     } else {
       return <View />;
     }
   }, [telegramState]);
 
-  return <SafeAreaView>{renderScreen()}</SafeAreaView>;
+  return <SafeAreaView style={{ padding: 10 }}>{renderScreen()}</SafeAreaView>;
 };
 
 export default App;
