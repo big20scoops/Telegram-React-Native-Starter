@@ -94,16 +94,16 @@ const App = () => {
   }, [TDController, isStarted]);
 
   const setContactImagePath = useCallback((id, path) => {
-    setContactsInfo(contactsInfo => {
-      let newContactsInfo = contactsInfo;
+    setContactsInfo(oldContactsInfo => {
+      let newContactsInfo = oldContactsInfo;
 
-      let correctUser = contactsInfo.filter(
+      let correctUser = oldContactsInfo.filter(
         user => user.image && user.image.id === id,
       );
       if (correctUser[0]) {
         const newContact = {...correctUser[0], image: {id, path}};
 
-        const otherUsers = contactsInfo.filter(
+        const otherUsers = oldContactsInfo.filter(
           user => !user.image || user.image.id !== id,
         );
 
