@@ -11,15 +11,21 @@ import {
   REACT_APP_TELEGRAM_API_ID,
   REACT_APP_TELEGRAM_API_HASH,
   TELEGRAM_EVENT,
+  TELEGRAM_CONTACT_EVENT,
 } from './src/constants';
 import {TelegramPhoneNumberInput} from './src/components/TelegramPhoneNumberInput';
 import {TelegramCodeInput} from './src/components/TelegramCodeInput';
 import {TelegramPasswordInput} from './src/components/TelegramPasswordInput';
+import {styles} from './src/styles';
+import {TelegramContactsList} from './src/components/TelegramContactsList';
 
 const App = () => {
   const {TDController} = NativeModules;
   const [telegramState, updateTelegramState] = useState('');
   const [isStarted, start] = useState(false);
+
+  const [contactIdsList, setContactIdsList] = useState([]);
+  const [contactsInfo, setContactsInfo] = useState([]);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(TDController);
@@ -41,43 +47,41 @@ const App = () => {
       }
     });
 
-    // const contactListener = eventEmitter.addListener(
-    //   TELEGRAM_CONTACT_EVENT,
-    //   async ({contacts: tdContacts, contact: tdContact, file: tdFile}) => {
-    //     if (tdContacts) {
-    //       dispatch(setContactIdsList(tdContacts));
-    //     }
+    const contactListener = eventEmitter.addListener(
+      TELEGRAM_CONTACT_EVENT,
+      async ({contacts: tdContacts, contact: tdContact, file: tdFile}) => {
+        if (tdContacts) {
+          setContactIdsList(tdContacts);
+        }
 
-    //     if (tdContact) {
-    //       const {id, first_name, last_name} = tdContact;
-    //       const image = tdContact?.profile_photo?.small;
-    //       const autobahnWallet = await getTelegramAutobahnAddressLookup(id);
-    //       const transformedContact = {
-    //         id,
-    //         autobahnWallet,
-    //         name: `${first_name} ${last_name}`,
-    //         image,
-    //       };
-    //       dispatch(setContactsInfo(transformedContact));
-    //       if (image) {
-    //         TDController.downloadFile(image.id);
-    //       }
-    //     }
+        if (tdContact) {
+          const {id, first_name, last_name} = tdContact;
+          const image = tdContact?.profile_photo?.small;
+          const transformedContact = {
+            id,
+            name: `${first_name} ${last_name}`,
+            image,
+          };
+          setContactsInfo(oldArray => [...oldArray, transformedContact]);
+          if (image) {
+            TDController.downloadFile(image.id);
+          }
+        }
 
-    //     if (tdFile) {
-    //       const {id, path} = tdFile;
-    //       if (path) {
-    //         dispatch(setContactImagePath({id, path}));
-    //       }
-    //     }
-    //   },
-    // );
+        // if (tdFile) {
+        //   const {id, path} = tdFile;
+        //   if (path) {
+        //     dispatch(setContactImagePath({id, path}));
+        //   }
+        // }
+      },
+    );
 
     startTDLib();
 
     return () => {
       eventListener.remove();
-      // contactListener.remove();
+      contactListener.remove();
     };
   }, [TDController, startTDLib]);
 
@@ -100,14 +104,19 @@ const App = () => {
       return <TelegramCodeInput />;
     } else if (telegramState === 'authorizationStateWaitPassword') {
       return <TelegramPasswordInput />;
-      // } else if (telegramState === 'authorizationStateReady') {
-      //   return <TelegramContactsList />;
+    } else if (telegramState === 'authorizationStateReady') {
+      return (
+        <TelegramContactsList
+          contactIdsList={contactIdsList}
+          contactsInfo={contactsInfo}
+        />
+      );
     } else {
       return <View />;
     }
-  }, [telegramState]);
+  }, [contactIdsList, contactsInfo, telegramState]);
 
-  return <SafeAreaView style={{ padding: 10 }}>{renderScreen()}</SafeAreaView>;
+  return <SafeAreaView style={styles.container}>{renderScreen()}</SafeAreaView>;
 };
 
 export default App;
